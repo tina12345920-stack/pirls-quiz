@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>閱讀一把照</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --paper:#FAF7EF;
+    --paper-deep:#F1ECE1;
+    --line:#DAD3C2;
+    --ink:#2B3A55;
+    --ink-soft:#5B6478;
+    --red:#B23A32;
+    --red-soft:#E7C9C4;
+    --sage:#6E8F63;
+    --sage-soft:#DCE6D4;
+    --gold:#A9791F;
+    --gold-soft:#EBDCB8;
+    --serif:'Noto Serif TC', serif;
+    --sans:'Noto Sans TC', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px),
+      repeating-linear-gradient(90deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px),
+      var(--paper);
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  ::selection{ background: var(--gold-soft); }
+  a{color:var(--ink);}
+
+  .wrap{max-width:880px; margin:0 auto; padding:28px 20px 80px;}
+
+  header.top{
+    padding:6px 4px 22px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:28px;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand .mark{
+    font-family:var(--mono); font-weight:600; font-size:12px;
+    border:1.5px solid var(--red); color:var(--red);
+    padding:2px 6px; letter-spacing:.06em; transform:rotate(-2deg);
+  }
+  .brand .mark-icon{
+    font-size:20px; line-height:1; padding:6px 8px; transform:rotate(-4deg);
+    border:none;
+  }
+  .brand h1{font-family:var(--serif); font-weight:900; font-size:22px; margin:0; letter-spacing:.02em;}
+  .brand p{font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin:2px 0 0; letter-spacing:.04em;}
+  .flow{font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:12px; letter-spacing:.02em;}
+  .flow b{color:var(--ink);}
+
+  .howto{
+    position:relative;
+    background:var(--gold-soft);
+    border:1.5px solid var(--gold);
+    padding:18px 40px 16px 20px;
+    margin-bottom:24px;
+  }
+  .howto-title{font-family:var(--serif); font-weight:700; font-size:15px; margin-bottom:8px;}
+  .howto-list{margin:0 0 10px; padding-left:20px; font-size:13px; line-height:1.7; color:var(--ink);}
+  .howto-list li{margin-bottom:2px;}
+  .howto-note{font-size:12px; color:var(--ink-soft); margin:0; padding-top:8px; border-top:1px dashed var(--gold);}
+  .howto-close{
+    position:absolute; top:10px; right:10px; width:24px; height:24px;
+    border:1.5px solid var(--gold); background:transparent; color:var(--ink);
+    cursor:pointer; font-size:12px; line-height:1;
+  }
+  .howto-close:hover{background:var(--gold); color:#fff;}
+  .howto.hidden{display:none;}
+
+  .card{
+    background:#fff;
+    border:1.5px solid var(--ink);
+    padding:26px 26px 22px;
+    margin-bottom:20px;
+    position:relative;
+  }
+  .card::before{
+    content:attr(data-tag);
+    position:absolute; top:-11px; left:20px;
+    background:var(--paper); padding:0 8px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--red);
+    font-weight:600;
+  }
+  h2.section-title{
+    font-family:var(--serif); font-size:20px; font-weight:700; margin:0 0 4px;
+  }
+  .hint{color:var(--ink-soft); font-size:13px; margin:0 0 18px;}
+
+  label.field-label{
+    display:block; font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+    color:var(--ink-soft); margin-bottom:6px; text-transform:uppercase;
+  }
+  select, input[type=text], input[type=number]{
+    font-family:var(--sans); font-size:15px; color:var(--ink);
+    border:1.5px solid var(--line); background:var(--paper);
+    padding:9px 10px; width:100%;
+  }
+  select:focus, input:focus{outline:2px solid var(--gold); outline-offset:1px; border-color:var(--ink);}
+  .field-err{color:var(--red); font-size:12px; margin:6px 0 0;}
+
+  .row{display:flex; gap:16px; flex-wrap:wrap;}
+  .row > div{flex:1; min-width:200px;}
+
+  .cat-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-top:6px;}
+  @media (max-width:480px){ .cat-grid{grid-template-columns:1fr;} }
+  .cat-cell{border:1.5px solid var(--line); padding:14px; background:var(--paper);}
+  .cat-cell .cat-name{font-family:var(--serif); font-weight:700; font-size:15px; margin-bottom:2px;}
+  .cat-cell .cat-desc{font-size:12px; color:var(--ink-soft); margin-bottom:10px; min-height:32px;}
+  .stepper-input{display:flex; align-items:center; border:1.5px solid var(--ink);}
+  .stepper-input button{
+    width:32px; height:32px; border:none; background:var(--ink); color:#fff; font-size:16px; cursor:pointer;
+  }
+  .stepper-input button:hover{background:var(--red);}
+  .stepper-input input{border:none; text-align:center; width:100%; font-family:var(--mono); font-weight:600;}
+  .total-line{font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:14px; text-align:right;}
+  .total-line b{color:var(--ink); font-size:14px;}
+
+  .fmt-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-top:6px;}
+  .fmt-card{border:1.5px solid var(--line); padding:14px; cursor:pointer; text-align:center; transition:.15s;}
+  .fmt-card:hover{border-color:var(--ink);}
+  .fmt-card.selected{border-color:var(--red); background:var(--red-soft);}
+  .fmt-card .fmt-icon{font-size:22px; margin-bottom:6px;}
+  .fmt-card .fmt-name{font-family:var(--serif); font-weight:700; font-size:14px;}
+  .fmt-card .fmt-sub{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+
+  .btn{
+    font-family:var(--mono); font-weight:600; font-size:13px; letter-spacing:.04em;
+    padding:11px 22px; border:1.5px solid var(--ink); background:var(--ink); color:#fff;
+    cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-transform:uppercase;
+  }
+  .btn:hover{background:#1c2740;}
+  .btn.secondary{background:#fff; color:var(--ink);}
+  .btn.secondary:hover{background:var(--paper-deep);}
+  .btn.red{background:var(--red); border-color:var(--red);}
+  .btn.red:hover{background:#8f2d27;}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.confirm-armed{background:var(--red); border-color:var(--red); color:#fff; animation:pulse-warn 1s ease-in-out infinite;}
+  @keyframes pulse-warn{0%,100%{opacity:1;} 50%{opacity:.6;}}
+  .btn-row{display:flex; justify-content:space-between; margin-top:22px;}
+  .btn-row.end{justify-content:flex-end;}
+
+  .upload-btns{display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+  .upload-btn{flex:1; min-width:150px; justify-content:center;}
+
+  .drop{
+    border:2px dashed var(--line); padding:36px 20px; text-align:center; cursor:pointer;
+    transition:.15s; background:var(--paper);
+  }
+  .drop:hover, .drop.drag{border-color:var(--red); background:var(--red-soft);}
+  .drop .big{font-size:30px; margin-bottom:8px;}
+  .drop .t1{font-family:var(--serif); font-weight:700; font-size:16px;}
+  .drop .t2{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+  #fileInput{display:none;}
+
+  .thumbs{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;}
+  .thumb{position:relative; width:96px; height:120px; border:1.5px solid var(--ink); overflow:hidden;}
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .thumb .rm{
+    position:absolute; top:2px; right:2px; width:20px; height:20px; background:var(--red); color:#fff;
+    border:none; font-size:12px; cursor:pointer; line-height:1;
+  }
+  .thumb .pg{position:absolute; bottom:0; left:0; background:var(--ink); color:#fff; font-family:var(--mono); font-size:10px; padding:1px 5px;}
+
+  .upload-warn{
+    font-size:12px; color:var(--red); background:var(--red-soft); border:1px solid var(--red);
+    padding:8px 12px; margin-top:12px;
+  }
+
+  .generate-bar{
+    text-align:center; padding:26px 10px; border:1.5px dashed var(--ink); background:#fff; margin-bottom:20px;
+  }
+  .generate-bar .btn{font-size:15px; padding:14px 34px;}
+  .proc-inline{display:none; margin-bottom:16px;}
+  .proc-inline.show{display:block;}
+  .seal{
+    width:64px; height:64px; border:3px solid var(--red); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 14px;
+    font-family:var(--serif); color:var(--red); font-weight:900; font-size:11px;
+    animation:spin 2.4s linear infinite; letter-spacing:.04em;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .proc-inline .msg{font-family:var(--serif); font-size:16px; font-weight:700;}
+  .proc-inline .sub{font-size:12px; color:var(--ink-soft); margin-top:4px; font-family:var(--mono);}
+  .err-box{border:1.5px solid var(--red); background:var(--red-soft); padding:16px; margin-top:14px; font-size:13px; text-align:left;}
+
+  #resultSection{display:none;}
+  #resultSection.show{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .tabs{display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;}
+  .tab{
+    font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.03em;
+    padding:9px 16px; border:1.5px solid var(--line); background:#fff; cursor:pointer;
+  }
+  .tab.active{border-color:var(--ink); background:var(--ink); color:#fff;}
+  .gform-btn{
+    margin-left:auto; border-style:dashed; color:var(--ink-soft); background:var(--paper);
+  }
+  .gform-btn:hover{border-color:var(--sage); color:var(--sage); border-style:solid;}
+  .gform-btn.copied{border-color:var(--sage); color:var(--sage); background:var(--sage-soft); border-style:solid;}
+
+  .article-box{background:var(--paper); border:1.5px solid var(--line); padding:14px 16px; font-size:13px; color:var(--ink-soft); margin-bottom:20px;}
+  .article-box b{color:var(--ink);}
+
+  .q-card{border:1.5px solid var(--line); margin-bottom:14px; padding:16px 18px;}
+  .q-head{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .q-tag{
+    font-family:var(--mono); font-size:10px; font-weight:700; padding:3px 8px; letter-spacing:.03em;
+    border-radius:2px; white-space:nowrap;
+  }
+  .q-num{font-family:var(--mono); color:var(--ink-soft); font-size:12px;}
+  .q-text{font-family:var(--serif); font-size:15px; font-weight:700; margin-bottom:10px; line-height:1.5;}
+  .opt{
+    display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border:1.5px solid var(--line);
+    margin-bottom:6px; cursor:pointer; font-size:14px; background:#fff;
+  }
+  .opt:hover{border-color:var(--ink);}
+  .opt.selected{border-color:var(--gold); background:var(--gold-soft);}
+  .opt .lab{font-family:var(--mono); font-weight:700; flex-shrink:0;}
+  .opt.correct{border-color:var(--sage); background:var(--sage-soft);}
+  .opt.wrong{border-color:var(--red); background:var(--red-soft);}
+  .explain{font-size:13px; color:var(--ink-soft); margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); display:none;}
+  .explain.show{display:block;}
+
+  .score-banner{
+    border:2px solid var(--ink); padding:22px; text-align:center; margin-bottom:22px; background:#fff;
+  }
+  .score-banner .num{font-family:var(--serif); font-size:44px; font-weight:900; color:var(--red);}
+  .score-banner .lab{font-family:var(--mono); font-size:12px; color:var(--ink-soft); letter-spacing:.05em;}
+
+  .sticky-bar{
+    position:sticky; bottom:0; background:var(--paper); border-top:2px solid var(--ink);
+    padding:14px 0; margin-top:10px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .sticky-bar .cnt{font-family:var(--mono); font-size:12px; color:var(--ink-soft);}
+
+  .share-panel{border:1.5px solid var(--ink); background:#fff; padding:22px; margin-top:18px;}
+  .share-panel h3{font-family:var(--serif); font-size:16px; margin:0 0 10px;}
+  .link-row{display:flex; gap:8px; margin:10px 0; flex-wrap:wrap;}
+  .link-row input{flex:1; min-width:200px; font-family:var(--mono); font-size:12px; background:var(--paper);}
+  .qr-wrap{display:flex; justify-content:center; padding:14px; background:#fff; border:1.5px solid var(--line); width:fit-content; margin:16px auto;}
+  .result-table{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+  .result-table th, .result-table td{border:1px solid var(--line); padding:6px 10px; text-align:left;}
+  .result-table th{background:var(--paper-deep); font-family:var(--mono); font-size:10px; letter-spacing:.03em;}
+  .qstat-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed var(--line); font-size:13px;}
+  .qstat-text{flex:1; color:var(--ink);}
+  .qstat-rate{font-family:var(--mono); font-weight:700; color:var(--ink); min-width:44px; text-align:right;}
+  .privacy-note{font-size:11px; color:var(--ink-soft); margin-top:14px; padding-top:10px; border-top:1px dashed var(--line);}
+  .howto-save-note{
+    font-size:13px; color:var(--ink); background:var(--gold-soft); border:1.5px solid var(--gold);
+    padding:12px 16px; margin-bottom:18px;
+  }
+  .answer-toggle{
+    font-family:var(--mono); font-size:11px; background:none; border:1px solid var(--line); color:var(--ink-soft);
+    padding:3px 9px; cursor:pointer; margin-top:8px;
+  }
+  .answer-toggle:hover{border-color:var(--ink); color:var(--ink);}
+  .answer-reveal{display:none; font-size:13px; color:var(--sage); margin-top:8px; padding-top:8px; border-top:1px dashed var(--line);}
+  .answer-reveal.show{display:block;}
+
+  footer.foot{margin-top:34px; text-align:center; font-family:var(--mono); font-size:11px; color:var(--ink-soft);}
+
+  @media (max-width:600px){
+    .brand h1{font-size:18px;}
+    .card{padding:18px 16px;}
+  }
+
+  @media print{
+    body{background:#fff !important;}
+    header.top, .tabs, .btn-row, .sticky-bar, #setupForm, .howto{display:none !important;}
+    .no-print{display:none !important;}
+    .card{border:none; padding:0;}
+    .q-card{break-inside:avoid; border:1px solid #999;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="mark mark-icon">📷</span>
+      <div>
+        <h1>閱讀一把照</h1>
+        <p>設定完成後拍照上傳，一鍵生成測驗</p>
+      </div>
+    </div>
+    <div class="flow"><b>STEP1</b> 測驗設定　→　<b>STEP2</b> 題型與題數　→　<b>STEP3</b> 輸出格式　→　<b>STEP4</b> 拍照上傳文章</div>
+  </header>
+
+  <div class="howto" id="howtoCard">
+    <button class="howto-close" id="howtoCloseBtn" aria-label="關閉使用說明">✕</button>
+    <div class="howto-title">👋 老師使用說明</div>
+    <ol class="howto-list">
+      <li>依序完成下方 <b>STEP1～STEP3</b>：選測驗對象、設定各題型題數、選想要的輸出格式。</li>
+      <li><b>STEP4</b> 用手機相機拍下文章，或直接上傳圖片。</li>
+      <li>按下「<b>生成測驗</b>」，系統會自動讀圖辨識並依設定出題。</li>
+      <li>完成後可直接產生專屬連結與 QR Code 給學生作答，並隨時查看學生成績。</li>
+    </ol>
+    <p class="howto-note">⚠ 點開即可直接使用，無需輸入任何金鑰或付費設定。</p>
+  </div>
+
+  <main id="setupForm">
+
+    <!-- STEP 1 -->
+    <div class="card" data-tag="STEP 1 · 測驗設定">
+      <h2 class="section-title">這份測驗要給誰？</h2>
+      <p class="hint">先設定測驗對象，之後的出題難度與用字會依此調整。</p>
+
+      <label class="field-label">測驗對象</label>
+      <div class="row">
+        <div>
+          <select id="audienceSelect">
+            <option value="國小低年級（1–2年級）">國小低年級（1–2年級）</option>
+            <option value="國小中年級（3–4年級）" selected>國小中年級（3–4年級）</option>
+            <option value="國小高年級（5–6年級）">國小高年級（5–6年級）</option>
+            <option value="國中">國中</option>
+            <option value="高中">高中</option>
+            <option value="成人／社會人士">成人／社會人士</option>
+            <option value="__custom">自訂...</option>
+          </select>
+        </div>
+        <div id="customAudienceWrap" style="display:none;">
+          <input type="text" id="customAudience" placeholder="例如：新住民華語班、國三會考複習">
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="card" data-tag="STEP 2 · 題型與題數（PIRLS 四層次）">
+      <h2 class="section-title">選擇每種層次要出幾題</h2>
+      <p class="hint">依照 PIRLS 閱讀理解四層次分配題數，設為 0 代表不出該類型的題目。</p>
+      <div class="cat-grid" id="catGrid"></div>
+      <div class="total-line">總題數：<b id="totalCount">0</b> 題</div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="card" data-tag="STEP 3 · 輸出格式">
+      <h2 class="section-title">最主要想要哪種輸出？</h2>
+      <p class="hint">完成命題後，三種格式都會提供下載／使用，這裡先選一個預設優先顯示的。</p>
+      <div class="fmt-grid" id="fmtGrid">
+        <div class="fmt-card selected" data-fmt="web">
+          <div class="fmt-icon">🖥️</div>
+          <div class="fmt-name">互動測驗網頁</div>
+          <div class="fmt-sub">當場作答、自動計分</div>
+        </div>
+        <div class="fmt-card" data-fmt="word">
+          <div class="fmt-icon">📄</div>
+          <div class="fmt-name">Word 文件</div>
+          <div class="fmt-sub">下載 .doc 可再編輯</div>
+        </div>
+        <div class="fmt-card" data-fmt="pdf">
+          <div class="fmt-icon">🖨️</div>
+          <div class="fmt-name">PDF／列印</div>
+          <div class="fmt-sub">版面完整，適合印卷</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="card" data-tag="STEP 4 · 拍照上傳文章">
+      <h2 class="section-title">把文章拍下來或上傳圖片</h2>
+      <p class="hint">建議一次<b>拍或選 1–4 張</b>清晰、對焦準確的照片。</p>
+
+      <div class="upload-btns">
+        <button type="button" class="btn secondary upload-btn" id="cameraBtn">📷 拍照</button>
+        <button type="button" class="btn secondary upload-btn" id="galleryBtn">🖼️ 從相簿選擇</button>
+      </div>
+
+      <div class="drop" id="dropZone">
+        <div class="big">🖼️</div>
+        <div class="t1">或把圖片拖曳到這裡</div>
+        <div class="t2">支援 JPG、PNG，可一次選取多張</div>
+      </div>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment">
+      <input type="file" id="fileInput" accept="image/*" multiple>
+
+      <div class="thumbs" id="thumbs"></div>
+      <p class="upload-warn" id="uploadWarn" style="display:none;"></p>
+    </div>
+
+    <!-- GENERATE -->
+    <div class="generate-bar">
+      <div class="proc-inline" id="procInline">
+        <div class="seal">命題中</div>
+        <div class="msg" id="procMsg">AI 正在閱讀文章、依四層次命題...</div>
+        <div class="sub">這通常需要 10–30 秒</div>
+        <div class="err-box" id="errBox" style="display:none;"></div>
+      </div>
+      <button class="btn red" id="generateBtn" disabled>生成測驗</button>
+    </div>
+
+  </main>
+
+  <section id="resultSection">
+    <div class="tabs no-print">
+      <div class="tab" data-tab="web">🖥️ 互動測驗</div>
+      <div class="tab" data-tab="word">📄 Word</div>
+      <div class="tab" data-tab="pdf">🖨️ PDF／列印</div>
+      <button class="tab gform-btn" id="copyGFormBtn" type="button">📋 複製成 Google 表單格式文字</button>
+    </div>
+
+    <div class="article-box" id="articleBox"></div>
+
+    <div id="resultBody"></div>
+
+    <div class="btn-row no-print">
+      <button class="btn secondary" id="startOverBtn">← 清空重新開始</button>
+      <div></div>
+    </div>
+  </section>
+
+  <footer class="foot no-print">閱讀一把照 · 產出內容建議由老師複核後再使用</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // Supabase 配置
+  const SUPABASE_URL = "https://slmkruvtjkbyvkajscfn.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_vrrt8Kz2yjCUvhLh6J0aIA_NxBGz_9o";
+
+  // 已自動填入您的 Cloudflare Worker 網址
+  const WORKER_URL = "https://withered-rice-23f3.tina12345920.workers.dev";
+
+  const db = {
+    async getQuiz(quizId) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/quizzes?id=eq.${encodeURIComponent(quizId)}&select=quiz`, {
+          headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+        });
+        const data = await res.json();
+        if (data && data.length > 0) return { value: JSON.stringify(data[0].quiz) };
+      } catch(e) { console.error(e); }
+      return null;
+    },
+    async setQuiz(id, quizData) {
+      let quizObj = typeof quizData === 'string' ? JSON.parse(quizData) : quizData;
+      await fetch(`${SUPABASE_URL}/rest/v1/quizzes`, {
+        method: 'POST',
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "resolution=merge-duplicates"
+        },
+        body: JSON.stringify({ id, quiz: quizObj.quiz || quizObj })
+      });
+    },
+    async saveResponse(respId, quizId, record) {
+      await fetch(`${SUPABASE_URL}/rest/v1/responses`, {
+        method: 'POST',
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "resolution=merge-duplicates"
+        },
+        body: JSON.stringify({ id: respId, quiz_id: quizId, record })
+      });
+    },
+    async listResponses(quizId) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/responses?quiz_id=eq.${encodeURIComponent(quizId)}&select=record`, {
+          headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+        });
+        const data = await res.json();
+        return data.map(d => ({ value: JSON.stringify(d.record) }));
+      } catch(e) { return []; }
+    }
+  };
+
+  const CATEGORIES = [
+    {key:'direct_extraction', label:'直接提取', desc:'答案明確寫在文中，找出即可', color:'var(--ink)'},
+    {key:'direct_inference', label:'直接推論', desc:'需連結文中線索做簡單推理', color:'var(--sage)'},
+    {key:'interpretation_integration', label:'詮釋整合', desc:'統整全文，理解主旨或意圖', color:'var(--red)'},
+    {key:'comparison_evaluation', label:'比較評鑑', desc:'評估內容、寫作手法或提出看法', color:'var(--gold)'}
+  ];
+  const DEFAULT_COUNTS = {direct_extraction:2, direct_inference:2, interpretation_integration:2, comparison_evaluation:1};
+
+  const $ = (sel, root) => (root||document).querySelector(sel);
+  const $all = (sel, root) => Array.from((root||document).querySelectorAll(sel));
+  function catInfo(key){ return CATEGORIES.find(c=>c.key===key) || CATEGORIES[0]; }
+  function escapeHtml(s){
+    return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const quizIdParam = urlParams.get('quiz');
+  const isResultsView = urlParams.get('view') === 'results';
+
+  if(quizIdParam && isResultsView){
+    bootAltMode('老師・作答結果');
+    renderResultsDashboard(quizIdParam);
+  } else if(quizIdParam){
+    bootAltMode('學生作答模式');
+    renderStudentQuiz(quizIdParam);
+  } else {
+    initCreatorApp();
+  }
+
+  function bootAltMode(subtitle){
+    document.querySelector('.wrap').innerHTML = `
+      <header class="top">
+        <div class="brand">
+          <span class="mark mark-icon">📷</span>
+          <div><h1>閱讀一把照</h1><p>${escapeHtml(subtitle)}</p></div>
+        </div>
+      </header>
+      <div id="modeRoot"></div>
+      <footer class="foot no-print">閱讀一把照 · 產出內容建議由老師複核後再使用</footer>
+    `;
+  }
+
+  async function renderStudentQuiz(quizId){
+    const root = $('#modeRoot');
+    root.innerHTML = `<div class="card" data-tag="讀取中"><p class="hint">正在載入測驗內容...</p></div>`;
+
+    let quizRec;
+    try{
+      const res = await db.getQuiz(quizId);
+      if(!res) throw new Error('not_found');
+      quizRec = JSON.parse(res.value);
+    }catch(e){
+      root.innerHTML = `<div class="card" data-tag="找不到測驗"><p class="hint">這個連結可能已失效，或測驗尚未產生完成，請跟老師確認連結是否正確。</p></div>`;
+      return;
+    }
+
+    const quiz = quizRec.quiz || quizRec;
+    const st = { name:'', answers:{}, submitted:false, nameError:false };
+
+    function renderQuestions(graded){
+      return quiz.questions.map((q, idx)=>{
+        const cat = catInfo(q.category);
+        return `<div class="q-card">
+          <div class="q-head"><span class="q-num">Q${idx+1}</span><span class="q-tag" style="border:1.5px solid ${cat.color}; color:${cat.color};">${cat.label}</span></div>
+          <div class="q-text">${escapeHtml(q.question)}</div>
+          <div class="opts" data-qid="${q.id}">
+            ${q.options.map((opt,oi)=>{
+              let cls = 'opt';
+              if(st.answers[q.id]===oi) cls += ' selected';
+              if(graded){
+                if(oi===q.answerIndex) cls += ' correct';
+                else if(st.answers[q.id]===oi) cls += ' wrong';
+              }
+              return `<div class="${cls}" data-qid="${q.id}" data-oi="${oi}"><span class="lab">${String.fromCharCode(65+oi)}</span><span>${escapeHtml(opt)}</span></div>`;
+            }).join('')}
+          </div>
+          <div class="explain ${graded?'show':''}">📝 ${escapeHtml(q.explanation||'')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function render(){
+      if(!st.submitted){
+        root.innerHTML = `
+          <div class="article-box"><b>${escapeHtml(quiz.articleTitle||'閱讀測驗')}</b> — ${escapeHtml(quiz.articleSummary||'')}</div>
+          <div class="card" data-tag="作答人">
+            <label class="field-label">姓名／座號</label>
+            <input type="text" id="studentName" placeholder="請輸入姓名或座號，方便老師辨識" value="${escapeHtml(st.name)}">
+            <p class="field-err" id="nameErr" style="display:${st.nameError ? 'block':'none'};">⚠ 請先輸入姓名或座號，方便老師對照結果</p>
+          </div>
+          ${renderQuestions(false)}
+          <div class="sticky-bar">
+            <span class="cnt">已作答 ${Object.keys(st.answers).length} / ${quiz.questions.length} 題</span>
+            <button class="btn red" id="submitBtn">交卷</button>
+          </div>
+        `;
+        $('#studentName').addEventListener('input', e => st.name = e.target.value);
+        $all('.opt').forEach(opt=>{
+          opt.addEventListener('click', ()=>{
+            st.answers[parseInt(opt.dataset.qid,10)] = parseInt(opt.dataset.oi,10);
+            render();
+          });
+        });
+        $('#submitBtn').addEventListener('click', submit);
+      } else {
+        const total = quiz.questions.length;
+        let correct = 0;
+        quiz.questions.forEach(q=>{ if(st.answers[q.id]===q.answerIndex) correct++; });
+        root.innerHTML = `
+          <div class="score-banner"><div class="num">${correct} / ${total}</div><div class="lab">已送出・答對題數</div></div>
+          ${renderQuestions(true)}
+          <p class="hint" style="text-align:center;">已將作答結果送出給老師，這個頁面可以關閉了。</p>
+        `;
+      }
+    }
+
+    async function submit(){
+      if(!st.name.trim()){
+        st.nameError = true;
+        render();
+        $('#studentName') && $('#studentName').focus();
+        return;
+      }
+      st.nameError = false;
+      const total = quiz.questions.length;
+      let correct = 0;
+      quiz.questions.forEach(q=>{ if(st.answers[q.id]===q.answerIndex) correct++; });
+      const record = { name: st.name.trim(), answers: st.answers, score: correct, total, submittedAt: Date.now() };
+      const submitBtn = $('#submitBtn');
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = '送出中...'; }
+      try{
+        await db.saveResponse(quizId + '_' + genId(), quizId, record);
+      }catch(e){}
+      st.submitted = true;
+      render();
+    }
+
+    render();
+  }
+
+  async function renderResultsDashboard(quizId){
+    const root = $('#modeRoot');
+    root.innerHTML = `<div class="card" data-tag="讀取中"><p class="hint">正在載入作答結果...</p></div>`;
+
+    async function load(){
+      let quizRec, responses = [];
+      try{
+        const res = await db.getQuiz(quizId);
+        if(!res) throw new Error('not_found');
+        quizRec = JSON.parse(res.value);
+      }catch(e){
+        root.innerHTML = `<div class="card" data-tag="找不到測驗"><p class="hint">找不到這份測驗，連結可能不正確。</p></div>`;
+        return;
+      }
+      try{
+        const list = await db.listResponses(quizId);
+        responses = list.map(item => JSON.parse(item.value));
+      }catch(e){}
+
+      const quiz = quizRec.quiz || quizRec;
+      responses.sort((a,b)=> b.submittedAt - a.submittedAt);
+      const avg = responses.length ? (responses.reduce((s,r)=>s+r.score,0)/responses.length) : 0;
+
+      const qStats = quiz.questions.map(q=>{
+        let correctCount = 0;
+        responses.forEach(r=>{ if(r.answers && r.answers[q.id]===q.answerIndex) correctCount++; });
+        return { q, rate: responses.length ? Math.round(correctCount/responses.length*100) : 0 };
+      });
+
+      root.innerHTML = `
+        <p class="howto-save-note">💾 <b>提醒：</b>每次測驗結束後，可在這裡查看最新作答狀況與各題答對率。</p>
+        <div class="article-box"><b>${escapeHtml(quiz.articleTitle||'閱讀測驗')}</b> — ${escapeHtml(quiz.articleSummary||'')}</div>
+        <div class="score-banner">
+          <div class="num">${responses.length}</div>
+          <div class="lab">已作答人數${responses.length ? '　｜　平均 ' + avg.toFixed(1) + ' / ' + quiz.questions.length : ''}</div>
+        </div>
+        <div class="card" data-tag="學生作答狀況">
+          <h2 class="section-title">作答名單</h2>
+          ${responses.length === 0 ? '<p class="hint">目前還沒有人送出作答，等學生開始作答後按下方「重新整理」即可看到。</p>' : `
+          <table class="result-table">
+            <thead><tr><th>姓名／座號</th><th>得分</th><th>送出時間</th></tr></thead>
+            <tbody>
+              ${responses.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td>${r.score} / ${r.total}</td><td>${new Date(r.submittedAt).toLocaleString('zh-TW')}</td></tr>`).join('')}
+            </tbody>
+          </table>`}
+        </div>
+        <div class="card" data-tag="每題答對率">
+          <h2 class="section-title">各題答對率</h2>
+          ${qStats.map((s,idx)=>`
+            <div class="qstat-row">
+              <span class="q-tag" style="border:1.5px solid ${catInfo(s.q.category).color}; color:${catInfo(s.q.category).color};">${catInfo(s.q.category).label}</span>
+              <span class="qstat-text">Q${idx+1}. ${escapeHtml(s.q.question)}</span>
+              <span class="qstat-rate">${s.rate}%</span>
+            </div>`).join('')}
+        </div>
+        <div class="btn-row no-print">
+          <button class="btn secondary" id="refreshBtn">↻ 重新整理</button>
+          <div></div>
+        </div>
+      `;
+      $('#refreshBtn').addEventListener('click', load);
+    }
+    load();
+  }
+
+  function initCreatorApp(){
+    const state = {
+      audience:'國小中年級（3–4年級）',
+      counts: Object.assign({}, DEFAULT_COUNTS),
+      outputFormat:'web',
+      images: [],
+      quiz: null,
+      activeTab: 'web',
+      share: null
+    };
+
+    const howtoCloseBtn = $('#howtoCloseBtn');
+    if(howtoCloseBtn){
+      howtoCloseBtn.addEventListener('click', ()=>{
+        $('#howtoCard').classList.add('hidden');
+      });
+    }
+
+    function buildCatGrid(){
+      const grid = $('#catGrid');
+      grid.innerHTML = '';
+      CATEGORIES.forEach(cat=>{
+        const cell = document.createElement('div');
+        cell.className = 'cat-cell';
+        cell.innerHTML = `
+          <div class="cat-name" style="color:${cat.color}">${cat.label}</div>
+          <div class="cat-desc">${cat.desc}</div>
+          <div class="stepper-input">
+            <button type="button" data-act="dec" data-cat="${cat.key}">−</button>
+            <input type="number" min="0" max="15" value="${state.counts[cat.key]}" data-cat="${cat.key}" class="cat-input">
+            <button type="button" data-act="inc" data-cat="${cat.key}">+</button>
+          </div>
+        `;
+        grid.appendChild(cell);
+      });
+      grid.addEventListener('click', (e)=>{
+        const btn = e.target.closest('button[data-act]');
+        if(!btn) return;
+        const key = btn.dataset.cat;
+        const delta = btn.dataset.act === 'inc' ? 1 : -1;
+        state.counts[key] = Math.max(0, Math.min(15, state.counts[key] + delta));
+        grid.querySelector(`input[data-cat="${key}"]`).value = state.counts[key];
+        updateTotal();
+      });
+      grid.addEventListener('input', (e)=>{
+        const inp = e.target.closest('.cat-input');
+        if(!inp) return;
+        let v = parseInt(inp.value,10);
+        if(isNaN(v) || v<0) v = 0;
+        if(v>15) v = 15;
+        state.counts[inp.dataset.cat] = v;
+        updateTotal();
+      });
+      updateTotal();
+    }
+
+    function updateTotal(){
+      const total = Object.values(state.counts).reduce((a,b)=>a+b,0);
+      $('#totalCount').textContent = total;
+      $('#generateBtn').disabled = !(total > 0 && state.images.length > 0);
+    }
+
+    $('#audienceSelect').addEventListener('change', (e)=>{
+      if(e.target.value === '__custom'){
+        $('#customAudienceWrap').style.display = 'block';
+        $('#customAudience').focus();
+      } else {
+        $('#customAudienceWrap').style.display = 'none';
+        state.audience = e.target.value;
+      }
+    });
+    $('#customAudience').addEventListener('input', (e)=>{ state.audience = e.target.value || '自訂對象'; });
+
+    $('#fmtGrid').addEventListener('click', (e)=>{
+      const card = e.target.closest('.fmt-card');
+      if(!card) return;
+      $all('.fmt-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.outputFormat = card.dataset.fmt;
+      state.activeTab = card.dataset.fmt;
+    });
+
+    buildCatGrid();
+
+    const dropZone = $('#dropZone');
+    const fileInput = $('#fileInput');
+    const cameraInput = $('#cameraInput');
+    const cameraBtn = $('#cameraBtn');
+    const galleryBtn = $('#galleryBtn');
+
+    dropZone.addEventListener('click', ()=> fileInput.click());
+    galleryBtn.addEventListener('click', ()=> fileInput.click());
+    cameraBtn.addEventListener('click', ()=> cameraInput.click());
+
+    dropZone.addEventListener('dragover', (e)=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+    dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('drag'));
+    dropZone.addEventListener('drop', (e)=>{
+      e.preventDefault(); dropZone.classList.remove('drag');
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e)=> handleFiles(e.target.files));
+    cameraInput.addEventListener('change', (e)=> handleFiles(e.target.files));
+
+    function compressImage(file){
+      return new Promise((resolve, reject)=>{
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 1600;
+            let { width, height } = img;
+            if(width > maxDim || height > maxDim){
+              if(width > height){ height = Math.round(height * maxDim / width); width = maxDim; }
+              else { width = Math.round(width * maxDim / height); height = maxDim; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            resolve({ dataUrl, mediaType:'image/jpeg', base64: dataUrl.split(',')[1] });
+          };
+          img.onerror = () => reject(new Error('圖片讀取失敗'));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error('檔案讀取失敗'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleFiles(fileList){
+      const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+      for(const file of files){
+        try{
+          const img = await compressImage(file);
+          state.images.push(img);
+          renderThumbs();
+          updateTotal();
+        }catch(e){}
+      }
+      fileInput.value = '';
+      cameraInput.value = '';
+    }
+
+    function renderThumbs(){
+      const wrap = $('#thumbs');
+      wrap.innerHTML = '';
+      state.images.forEach((img, idx)=>{
+        const d = document.createElement('div');
+        d.className = 'thumb';
+        d.innerHTML = `<img src="${img.dataUrl}" alt="第${idx+1}頁"><span class="pg">第${idx+1}頁</span><button class="rm" data-idx="${idx}">✕</button>`;
+        wrap.appendChild(d);
+      });
+      wrap.querySelectorAll('.rm').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          state.images.splice(parseInt(btn.dataset.idx,10),1);
+          renderThumbs();
+          updateTotal();
+        });
+      });
+    }
+
+    $('#generateBtn').addEventListener('click', generateQuiz);
+
+    function categoryPromptList(){
+      return CATEGORIES.map(c => `- ${c.label}（category="${c.key}"）：${state.counts[c.key]} 題 — 定義：${c.desc}`).join('
+');
+    }
+
+    async function generateQuiz(){
+      const proc = $('#procInline');
+      const errBox = $('#errBox');
+      proc.classList.add('show');
+      errBox.style.display = 'none';
+      $('#generateBtn').disabled = true;
+      $('#procMsg').textContent = 'AI 正在閱讀文章、依四層次命題...';
+      proc.scrollIntoView({behavior:'smooth', block:'center'});
+
+      const total = Object.values(state.counts).reduce((a,b)=>a+b,0);
+      const instructions = `你是一位專業的國語文閱讀理解命題老師。使用者會提供 1 張以上文章照片。
+請完成以下任務：
+1. 辨識並理解文章內容。
+2. 針對「${state.audience}」的程度，依照 PIRLS 閱讀理解四層次命題：
+${categoryPromptList()}
+（共 ${total} 題，若某層次題數為 0 則完全不要出該類型的題目）
+3. 每題為單選題，提供 4 個選項（只有 1 個正確答案）。
+4. 每題附上簡短解析。
+5. 為文章下一個簡短標題，並寫一段 60–100 字的文章摘要。
+
+請「只」輸出以下 JSON 格式，不要有任何 Markdown 標記、不要有 JSON 以外的文字說明：
+{
+  "articleTitle": "string",
+  "articleSummary": "string",
+  "questions": [
+    {
+      "id": 1,
+      "category": "direct_extraction | direct_inference | interpretation_integration | comparison_evaluation",
+      "question": "string",
+      "options": ["string","string","string","string"],
+      "answerIndex": 0,
+      "explanation": "string"
+    }
+  ]
+}`;
+
+      const content = [];
+      state.images.forEach(img=>{
+        content.push({ type:"image", source:{ type:"base64", media_type: img.mediaType, data: img.base64 } });
+      });
+      content.push({ type:"text", text: instructions });
+
+      try{
+        const response = await fetch(WORKER_URL, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({
+            model:"claude-3-5-sonnet-20241022",
+            max_tokens: 4096,
+            messages:[ { role:"user", content } ]
+          })
+        });
+
+        if(!response.ok) throw new Error(`API 請求失敗（狀態碼 ${response.status}）`);
+        const data = await response.json();
+        const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('
+');
+        let clean = textBlocks.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+        let parsed = JSON.parse(clean);
+
+        state.quiz = parsed;
+        proc.classList.remove('show');
+        $('#generateBtn').disabled = false;
+        renderResult();
+        $('#resultSection').classList.add('show');
+        $('#resultSection').scrollIntoView({behavior:'smooth', block:'start'});
+      }catch(err){
+        proc.classList.remove('show');
+        errBox.style.display = 'block';
+        errBox.textContent = '⚠ 產生測驗時發生問題：' + (err.message || err);
+        $('#generateBtn').disabled = false;
+      }
+    }
+
+    function renderResult(){
+      $('#articleBox').innerHTML = `<b>${escapeHtml(state.quiz.articleTitle || '（未命名文章）')}</b> — ${escapeHtml(state.quiz.articleSummary || '')}`;
+      $all('.tab').forEach(t=>{
+        t.classList.toggle('active', t.dataset.tab === state.activeTab);
+      });
+      renderTabBody();
+    }
+
+    function armConfirm(btn, warnText, onConfirm){
+      if(btn.dataset.armed === '1'){
+        clearTimeout(btn._armTimer);
+        btn.dataset.armed = '0';
+        btn.classList.remove('confirm-armed');
+        btn.textContent = btn.dataset.originalText || btn.textContent;
+        onConfirm();
+        return;
+      }
+      btn.dataset.originalText = btn.textContent;
+      btn.dataset.armed = '1';
+      btn.textContent = warnText;
+      btn.classList.add('confirm-armed');
+      btn._armTimer = setTimeout(()=>{
+        btn.dataset.armed = '0';
+        btn.classList.remove('confirm-armed');
+        btn.textContent = btn.dataset.originalText;
+      }, 3000);
+    }
+
+    $('#startOverBtn').addEventListener('click', function(){
+      armConfirm(this, '⚠ 再按一次確認清空', ()=>{
+        state.images = [];
+        state.quiz = null;
+        renderThumbs();
+        updateTotal();
+        $('#resultSection').classList.remove('show');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+
+    $all('.tab[data-tab]').forEach(tab=>{
+      tab.addEventListener('click', ()=>{
+        state.activeTab = tab.dataset.tab;
+        $all('.tab[data-tab]').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        renderTabBody();
+      });
+    });
+
+    function renderTabBody(){
+      const body = $('#resultBody');
+      if(state.activeTab === 'web'){
+        body.innerHTML = renderWebQuizHtml();
+        bindWebQuizEvents();
+      } else if(state.activeTab === 'word'){
+        body.innerHTML = renderDocPreviewHtml() + `
+          <div class="btn-row no-print">
+            <div></div>
+            <button class="btn red" id="downloadWordBtn">⬇ 下載 Word (.doc)</button>
+          </div>`;
+        $('#downloadWordBtn').addEventListener('click', downloadWord);
+      } else if(state.activeTab === 'pdf'){
+        body.innerHTML = renderDocPreviewHtml(true) + `
+          <div class="btn-row no-print">
+            <div></div>
+            <button class="btn red" id="printBtn">🖨 開啟列印／另存 PDF</button>
+          </div>`;
+        $('#printBtn').addEventListener('click', ()=> window.print());
+      }
+    }
+
+    function renderWebQuizHtml(){
+      let html = `<p class="hint">📋 老師預覽：確認內容無誤後，點擊下方按鈕產生連結分享給學生作答。</p>`;
+      state.quiz.questions.forEach((q, idx)=>{
+        const cat = catInfo(q.category);
+        html += `<div class="q-card">
+          <div class="q-head">
+            <span class="q-num">Q${idx+1}</span>
+            <span class="q-tag" style="border:1.5px solid ${cat.color}; color:${cat.color};">${cat.label}</span>
+          </div>
+          <div class="q-text">${escapeHtml(q.question)}</div>
+          <div class="opts">
+            ${q.options.map((opt,oi)=>`
+              <div class="opt" style="cursor:default;">
+                <span class="lab">${String.fromCharCode(65+oi)}</span><span>${escapeHtml(opt)}</span>
+              </div>`).join('')}
+          </div>
+          <button type="button" class="answer-toggle" data-qid="${q.id}">🔑 顯示解答</button>
+          <div class="answer-reveal" id="reveal-${q.id}">✅ 正確答案：${String.fromCharCode(65+q.answerIndex)}　—　${escapeHtml(q.explanation||'')}</div>
+        </div>`;
+      });
+
+      html += `<div class="share-panel">`;
+      if(state.share && state.share.shareUrl){
+        html += `
+          <h3>🔗 分享給學生作答</h3>
+          <div class="link-row">
+            <input type="text" id="shareUrlInput" readonly value="${escapeHtml(state.share.shareUrl)}">
+            <button class="btn secondary" id="copyLinkBtn">複製連結</button>
+          </div>
+          <div class="qr-wrap" id="qrWrap"></div>
+          <p class="hint" style="text-align:center;">學生用手機掃描 QR Code，或打開上面的連結即可開始作答</p>
+          <div class="btn-row no-print" style="margin-top:10px;">
+            <a class="btn red" href="${escapeHtml(state.share.resultsUrl)}" target="_blank" rel="noopener">📊 查看作答結果</a>
+            <button class="btn secondary" id="regenLinkBtn">↺ 產生新連結</button>
+          </div>`;
+      } else {
+        html += `
+          <h3>🔗 分享給學生作答</h3>
+          <p class="hint">按下方按鈕將測驗存入雲端並產生專屬連結與 QR Code。</p>
+          <button class="btn red" id="genLinkBtn">產生測驗連結與 QR Code</button>
+          <p class="privacy-note" id="genLinkErr" style="display:none;"></p>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function renderQrCode(){
+      const wrap = $('#qrWrap');
+      if(!wrap || !state.share || !state.share.shareUrl) return;
+      wrap.innerHTML = '';
+      if(typeof QRCode === 'undefined') return;
+      new QRCode(wrap, {
+        text: state.share.shareUrl,
+        width: 176,
+        height: 176,
+        colorDark: '#2B3A55',
+        colorLight: '#ffffff'
+      });
+    }
+
+    async function handleGenerateShareLink(){
+      const btn = $('#genLinkBtn');
+      const errBox = $('#genLinkErr');
+      if(btn){ btn.disabled = true; btn.textContent = '儲存中...'; }
+      try{
+        const id = genId();
+        await db.setQuiz(id, state.quiz);
+        const base = location.origin + location.pathname;
+        state.share = {
+          id,
+          shareUrl: base + '?quiz=' + id,
+          resultsUrl: base + '?quiz=' + id + '&view=results'
+        };
+        renderTabBody();
+      }catch(err){
+        if(errBox){
+          errBox.style.display = 'block';
+          errBox.textContent = '⚠ 儲存失敗：' + err.message;
+        }
+        if(btn){ btn.disabled = false; btn.textContent = '產生測驗連結與 QR Code'; }
+      }
+    }
+
+    function bindWebQuizEvents(){
+      $all('.answer-toggle').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const qid = btn.dataset.qid;
+          const reveal = $('#reveal-'+qid);
+          if(!reveal) return;
+          const showing = reveal.classList.toggle('show');
+          btn.textContent = showing ? '🔒 隱藏解答' : '🔑 顯示解答';
+        });
+      });
+
+      const genLinkBtn = $('#genLinkBtn');
+      if(genLinkBtn) genLinkBtn.addEventListener('click', handleGenerateShareLink);
+
+      const regenLinkBtn = $('#regenLinkBtn');
+      if(regenLinkBtn){
+        regenLinkBtn.addEventListener('click', function(){
+          armConfirm(this, '⚠ 再按一次確認', ()=>{
+            state.share = null;
+            renderTabBody();
+          });
+        });
+      }
+
+      const copyBtn = $('#copyLinkBtn');
+      if(copyBtn){
+        copyBtn.addEventListener('click', async ()=>{
+          const input = $('#shareUrlInput');
+          try{
+            await navigator.clipboard.writeText(input.value);
+            copyBtn.textContent = '已複製 ✓';
+          }catch(e){
+            input.select();
+            document.execCommand('copy');
+            copyBtn.textContent = '已複製 ✓';
+          }
+          setTimeout(()=>{ copyBtn.textContent = '複製連結'; }, 1500);
+        });
+      }
+
+      renderQrCode();
+    }
+
+    function renderDocPreviewHtml(){
+      let html = `<div class="card" data-tag="測驗卷預覽">
+        <h2 class="section-title" style="text-align:center;">${escapeHtml(state.quiz.articleTitle || '閱讀測驗')}</h2>
+        <p class="hint" style="text-align:center;">對象：${escapeHtml(state.audience)} ｜ 姓名：＿＿＿＿＿＿　座號：＿＿＿＿</p>`;
+      state.quiz.questions.forEach((q, idx)=>{
+        const cat = catInfo(q.category);
+        html += `<div style="margin:16px 0; padding-bottom:12px; border-bottom:1px dashed var(--line);">
+          <div style="font-family:var(--mono); font-size:11px; color:${cat.color}; margin-bottom:4px;">【${cat.label}】</div>
+          <div style="font-family:var(--serif); font-weight:700; font-size:15px;">${idx+1}. ${escapeHtml(q.question)}</div>
+          <div style="margin-top:6px; font-size:14px; line-height:2;">
+            ${q.options.map((opt,oi)=>`(${String.fromCharCode(65+oi)}) ${escapeHtml(opt)}`).join('　')}
+          </div>
+        </div>`;
+      });
+      html += `<div style="margin-top:24px; padding-top:14px; border-top:2px solid var(--ink);">
+        <div style="font-family:var(--serif); font-weight:700; margin-bottom:8px;">🔑 解答與解析</div>`;
+      state.quiz.questions.forEach((q, idx)=>{
+        html += `<div style="font-size:13px; margin-bottom:6px;"><b>${idx+1}. 答案：${String.fromCharCode(65+q.answerIndex)}</b> — ${escapeHtml(q.explanation||'')}</div>`;
+      });
+      html += `</div></div>`;
+      return html;
+    }
+
+    function downloadWord(){
+      const title = escapeHtml(state.quiz.articleTitle || '閱讀測驗');
+      let body = `<h1 style="font-size:20pt;text-align:center;">${title}</h1>
+        <p style="text-align:center;">對象：${escapeHtml(state.audience)}　　姓名：＿＿＿＿＿＿　　座號：＿＿＿＿</p><hr/>`;
+      state.quiz.questions.forEach((q, idx)=>{
+        const cat = catInfo(q.category);
+        body += `<p><b>【${cat.label}】</b></p>
+          <p><b>${idx+1}. ${escapeHtml(q.question)}</b></p>
+          <p>${q.options.map((opt,oi)=>`(${String.fromCharCode(65+oi)}) ${escapeHtml(opt)}`).join('　　')}</p><br/>`;
+      });
+      body += `<hr/><h2>解答與解析</h2>`;
+      state.quiz.questions.forEach((q, idx)=>{
+        body += `<p>${idx+1}. 答案：<b>${String.fromCharCode(65+q.answerIndex)}</b> — ${escapeHtml(q.explanation||'')}</p>`;
+      });
+      const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="utf-8"><title>${title}</title></head>
+        <body style="font-family:'PMingLiU','Microsoft JhengHei',serif; font-size:12pt;">${body}</body></html>`;
+      const blob = new Blob(['﻿', html], {type:'application/msword'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(state.quiz.articleTitle||'閱讀測驗')}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    updateTotal();
+  }
+})();
+</script>
+</body>
+</html>
