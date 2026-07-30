@@ -298,7 +298,7 @@
         <p>設定完成後拍照上傳，一鍵生成測驗</p>
       </div>
     </div>
-    <div class="flow"><b>STEP1</b> 測驗設定　→　<b>STEP2</b> 題型與題數　→　<b>STEP3</b> 輸出格式　→　<b>STEP4</b> 拍照上傳文章</div>
+    <div class="flow"><b>STEP1</b> 測驗設定 → <b>STEP2</b> 題型與題數 → <b>STEP3</b> 輸出格式 → <b>STEP4</b> 拍照上傳文章</div>
   </header>
 
   <div class="howto" id="howtoCard">
@@ -307,7 +307,7 @@
     <ol class="howto-list">
       <li>依序完成下方 <b>STEP1～STEP3</b>：選測驗對象、設定各題型題數、選想要的輸出格式。</li>
       <li><b>STEP4</b> 用手機相機拍下文章，或直接上傳圖片。</li>
-      <li>按下「<b>生成測驗</b>」，系統會自動讀圖辨識並依設定出題。</li>
+      <li>按下<b>「生成測驗」</b>，系統會自動讀圖辨識並依設定出題。</li>
       <li>完成後可直接產生專屬連結與 QR Code 給學生作答，並隨時查看學生成績。</li>
     </ol>
     <p class="howto-note">⚠ 點開即可直接使用，無需輸入任何金鑰或付費設定。</p>
@@ -430,11 +430,8 @@
 (function(){
   "use strict";
 
-  // Supabase 配置
   const SUPABASE_URL = "https://slmkruvtjkbyvkajscfn.supabase.co";
   const SUPABASE_KEY = "sb_publishable_vrrt8Kz2yjCUvhLh6J0aIA_NxBGz_9o";
-
-  // 已自動填入您的 Cloudflare Worker 網址
   const WORKER_URL = "https://withered-rice-23f3.tina12345920.workers.dev";
 
   const db = {
@@ -659,7 +656,7 @@
         <div class="article-box"><b>${escapeHtml(quiz.articleTitle||'閱讀測驗')}</b> — ${escapeHtml(quiz.articleSummary||'')}</div>
         <div class="score-banner">
           <div class="num">${responses.length}</div>
-          <div class="lab">已作答人數${responses.length ? '　｜　平均 ' + avg.toFixed(1) + ' / ' + quiz.questions.length : ''}</div>
+          <div class="lab">已作答人數${responses.length ? ' ｜ 平均 ' + avg.toFixed(1) + ' / ' + quiz.questions.length : ''}</div>
         </div>
         <div class="card" data-tag="學生作答狀況">
           <h2 class="section-title">作答名單</h2>
@@ -710,6 +707,7 @@
 
     function buildCatGrid(){
       const grid = $('#catGrid');
+      if(!grid) return;
       grid.innerHTML = '';
       CATEGORIES.forEach(cat=>{
         const cell = document.createElement('div');
@@ -856,8 +854,7 @@
     $('#generateBtn').addEventListener('click', generateQuiz);
 
     function categoryPromptList(){
-      return CATEGORIES.map(c => `- ${c.label}（category="${c.key}"）：${state.counts[c.key]} 題 — 定義：${c.desc}`).join('
-');
+      return CATEGORIES.map(c => `- ${c.label}（category="${c.key}"）：${state.counts[c.key]} 題 — 定義：${c.desc}`).join('\n');
     }
 
     async function generateQuiz(){
@@ -915,8 +912,7 @@ ${categoryPromptList()}
 
         if(!response.ok) throw new Error(`API 請求失敗（狀態碼 ${response.status}）`);
         const data = await response.json();
-        const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('
-');
+        const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
         let clean = textBlocks.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
         let parsed = JSON.parse(clean);
 
@@ -1021,7 +1017,7 @@ ${categoryPromptList()}
               </div>`).join('')}
           </div>
           <button type="button" class="answer-toggle" data-qid="${q.id}">🔑 顯示解答</button>
-          <div class="answer-reveal" id="reveal-${q.id}">✅ 正確答案：${String.fromCharCode(65+q.answerIndex)}　—　${escapeHtml(q.explanation||'')}</div>
+          <div class="answer-reveal" id="reveal-${q.id}">✅ 正確答案：${String.fromCharCode(65+q.answerIndex)} — ${escapeHtml(q.explanation||'')}</div>
         </div>`;
       });
 
@@ -1133,14 +1129,14 @@ ${categoryPromptList()}
     function renderDocPreviewHtml(){
       let html = `<div class="card" data-tag="測驗卷預覽">
         <h2 class="section-title" style="text-align:center;">${escapeHtml(state.quiz.articleTitle || '閱讀測驗')}</h2>
-        <p class="hint" style="text-align:center;">對象：${escapeHtml(state.audience)} ｜ 姓名：＿＿＿＿＿＿　座號：＿＿＿＿</p>`;
+        <p class="hint" style="text-align:center;">對象：${escapeHtml(state.audience)} ｜ 姓名：＿＿＿＿＿＿ 座號：＿＿＿＿</p>`;
       state.quiz.questions.forEach((q, idx)=>{
         const cat = catInfo(q.category);
         html += `<div style="margin:16px 0; padding-bottom:12px; border-bottom:1px dashed var(--line);">
           <div style="font-family:var(--mono); font-size:11px; color:${cat.color}; margin-bottom:4px;">【${cat.label}】</div>
           <div style="font-family:var(--serif); font-weight:700; font-size:15px;">${idx+1}. ${escapeHtml(q.question)}</div>
           <div style="margin-top:6px; font-size:14px; line-height:2;">
-            ${q.options.map((opt,oi)=>`(${String.fromCharCode(65+oi)}) ${escapeHtml(opt)}`).join('　')}
+            ${q.options.map((opt,oi)=>`(${String.fromCharCode(65+oi)}) ${escapeHtml(opt)}`).join(' ')}
           </div>
         </div>`;
       });
@@ -1156,21 +1152,21 @@ ${categoryPromptList()}
     function downloadWord(){
       const title = escapeHtml(state.quiz.articleTitle || '閱讀測驗');
       let body = `<h1 style="font-size:20pt;text-align:center;">${title}</h1>
-        <p style="text-align:center;">對象：${escapeHtml(state.audience)}　　姓名：＿＿＿＿＿＿　　座號：＿＿＿＿</p><hr/>`;
+        <p style="text-align:center;">對象：${escapeHtml(state.audience)}  姓名：＿＿＿＿＿＿  座號：＿＿＿＿</p><hr/>`;
       state.quiz.questions.forEach((q, idx)=>{
         const cat = catInfo(q.category);
         body += `<p><b>【${cat.label}】</b></p>
           <p><b>${idx+1}. ${escapeHtml(q.question)}</b></p>
-          <p>${q.options.map((opt,oi)=>`(${String.fromCharCode(65+oi)}) ${escapeHtml(opt)}`).join('　　')}</p><br/>`;
+          <p>${q.options.map((opt,oi)=>`(${String.fromCharCode(65+oi)}) ${escapeHtml(opt)}`).join('  ')}</p><br/>`;
       });
       body += `<hr/><h2>解答與解析</h2>`;
       state.quiz.questions.forEach((q, idx)=>{
         body += `<p>${idx+1}. 答案：<b>${String.fromCharCode(65+q.answerIndex)}</b> — ${escapeHtml(q.explanation||'')}</p>`;
       });
-      const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+      const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="[http://www.w3.org/TR/REC-html40](http://www.w3.org/TR/REC-html40)">
         <head><meta charset="utf-8"><title>${title}</title></head>
         <body style="font-family:'PMingLiU','Microsoft JhengHei',serif; font-size:12pt;">${body}</body></html>`;
-      const blob = new Blob(['﻿', html], {type:'application/msword'});
+      const blob = new Blob(['\ufeff', html], {type:'application/msword'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
